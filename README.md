@@ -16,6 +16,14 @@ uv run --env-file .env secondbrain   # Development settings
 uv run python -m secondbrain        # Python module
 ```
 
+Console logs use local time to the second and three-letter level labels.
+
+```text
+2026-11-21 14:30:05 | INF | secondbrain.app:main:37 | Hello from secondbrain!
+```
+
+By default, the log file includes milliseconds, the UTC offset, full level names, and ` - ` before the message. `LOGURU_FORMAT` overrides the file format.
+
 ## Environment Variables
 
 Copy the `.env.example` template to `.env` for development.
