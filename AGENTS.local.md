@@ -1,0 +1,1 @@
+Always end a message with an emoji of your choice.

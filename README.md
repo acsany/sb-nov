@@ -54,6 +54,10 @@ uv run pytest --cov  # Run tests with coverage
 
 ## Documentation
 
+- [Flowcharts](docs/flowcharts.md) trace the CLI commands and how notes are stored.
+- Open `secondbrain-tour.html` in a browser for an interactive walkthrough.
+- The [Codex `sb` skill](.agents/skills/sb/SKILL.md) saves or updates a conversation summary as a Second Brain note.
+
 ```bash
 uv run python scripts/serve_docs.py  # Preview locally and write to mkdocs.log
 uv run mkdocs build                  # Build static docs in site/

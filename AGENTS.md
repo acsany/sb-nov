@@ -1,5 +1,7 @@
 # Repository Guidelines
 
+- Read @AGENTS.local.md first.
+
 ## Coding Style & Naming Conventions
 
 - Google-style docstrings (used by `mkdocstrings` for API docs).

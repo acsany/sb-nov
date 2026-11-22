@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A hands-on tour of secondbrain, a local Markdown notebook for your terminal.">
+<title>Secondbrain · Interactive tour</title>
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #f8f7ff;
+    --ink: #21183b;
+    --muted: #5c526e;
+    --purple: #5835c6;
+    --violet: #e9e1ff;
+    --lime: #dafa77;
+    --line: #ddd5ec;
+    --mono: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-family: "Avenir Next", Avenir, system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 100%;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; }
+  button, input, textarea { font: inherit; }
+  button { cursor: pointer; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid #815cfa; outline-offset: 4px; }
+  [hidden] { display: none !important; }
+  .wrap { width: min(1120px, calc(100% - 3rem)); margin-inline: auto; }
+  .hero { background: #e9e1ff; border-bottom: 1px solid #d9c9fa; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 1.35rem; border-bottom: 1px solid #d5c6ee; }
+  .brand { display: flex; align-items: center; gap: .65rem; font-weight: 850; letter-spacing: -.035em; }
+  .brand-icon { display: grid; place-items: center; width: 2.15rem; height: 2.15rem; border-radius: .65rem; background: var(--ink); color: var(--lime); font: bold 1.15rem var(--mono); }
+  nav { display: flex; gap: 1.2rem; font-size: .9rem; font-weight: 700; }
+  nav a { text-decoration-thickness: 1px; text-underline-offset: .3em; }
+  .hero-grid { display: grid; grid-template-columns: 1.2fr .8fr; align-items: center; min-height: 330px; gap: 3rem; padding-block: 2.6rem 3.15rem; }
+  h1, h2, h3, p { margin: 0; }
+  h1, h2, h3 { line-height: 1.06; }
+  h1 { font-size: clamp(3rem, 7.7vw, 6.8rem); letter-spacing: -.083em; font-weight: 900; }
+  h1 span { color: var(--purple); }
+  .intro { margin-top: 1.25rem; max-width: 34ch; color: var(--muted); font-size: 1.125rem; line-height: 1.55; }
+  .hero-art { position: relative; display: grid; place-items: center; min-height: 255px; isolation: isolate; }
+  .orbit { position: absolute; width: min(100%, 370px); height: 160px; border: 1px dashed #9375d9; border-radius: 50%; transform: rotate(-21deg); z-index: -1; }
+  .hero-file { width: min(70%, 230px); padding: 1rem 1rem 1.45rem; border: 2px solid var(--ink); border-radius: .95rem; transform: rotate(8deg); box-shadow: 7px 8px 0 var(--ink); background: #fff; font-family: var(--mono); }
+  .hero-file .ext { display: inline-block; background: var(--lime); border-radius: .35rem; padding: .25rem .5rem; font-weight: 800; }
+  .hero-file strong { display: block; margin-top: .9rem; font-size: .94rem; }
+  .hero-file i { display: block; width: 100%; height: .36rem; margin-top: .55rem; border-radius: .25rem; background: #e1d6fa; }
+  .hero-file i:last-child { width: 66%; }
+  .sparkle { color: var(--purple); position: absolute; font-size: 3rem; top: 0; right: 6%; line-height: 1; }
+  .sparkle.small { left: 10%; bottom: 0; right: auto; top: auto; font-size: 1.8rem; }
+  section { margin-block: 3.6rem; scroll-margin-top: 1rem; }
+  h2 { font-size: clamp(2.05rem, 4.6vw, 3.2rem); letter-spacing: -.06em; font-weight: 850; }
+  .section-lede { max-width: 65ch; margin-top: .65rem; color: var(--muted); line-height: 1.55; }
+  .commands { display: grid; grid-template-columns: repeat(4, 1fr); gap: .65rem; margin-top: 1.3rem; }
+  .command {
+    text-align: left; background: #fff; color: var(--ink); border: 1px solid var(--line);
+    border-radius: .8rem; padding: .8rem .95rem; display: flex; align-items: center; gap: .6rem;
+  }
+  .command:hover, .file-button:hover { border-color: var(--purple); }
+  .command[aria-pressed="true"] { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .command-icon { font: 800 1.15rem var(--mono); width: 1.6rem; text-align: center; }
+  .command code { font: 800 .95rem var(--mono); }
+  .playground { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.16fr); margin-top: .75rem; border: 1px solid var(--line); border-radius: 1.15rem; overflow: hidden; background: #fff; }
+  .controls { padding: clamp(1rem, 3vw, 1.7rem); min-width: 0; }
+  .controls h3 { font-size: 1.4rem; letter-spacing: -.03em; }
+  .description { margin: .5rem 0 .95rem; color: var(--muted); line-height: 1.5; }
+  code, pre { font-family: var(--mono); }
+  .signature { display: block; width: fit-content; max-width: 100%; background: var(--violet); padding: .45rem .6rem; border-radius: .4rem; font-size: .87rem; overflow-wrap: anywhere; }
+  label { display: block; font-weight: 750; font-size: .9rem; margin: .8rem 0 .3rem; }
+  .optional { color: var(--muted); font-weight: 500; }
+  input, textarea { width: 100%; border: 1px solid #beb1d2; border-radius: .55rem; background: var(--paper); color: var(--ink); padding: .55rem .65rem; }
+  textarea { resize: vertical; min-height: 3.45rem; }
+  .actions { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; margin-top: 1rem; }
+  .primary, .quiet { border-radius: .55rem; font-weight: 750; padding: .55rem .8rem; }
+  .primary { border: 1px solid var(--ink); background: var(--lime); color: #212319; box-shadow: 2px 2px 0 var(--ink); }
+  .primary:hover { background: #ebffa6; }
+  .quiet { border: 1px solid var(--line); color: var(--ink); background: transparent; }
+  .quiet:hover { background: var(--violet); }
+  .terminal { background: #211834; color: #f5edff; padding: clamp(1rem, 3vw, 1.7rem); min-width: 0; }
+  .terminal-top { display: flex; align-items: center; gap: .65rem; padding-bottom: .8rem; border-bottom: 1px solid #46365c; color: #e1d4f0; font-size: .85rem; font-weight: 750; }
+  .play-icon { color: var(--lime); font-family: var(--mono); }
+  .preview-command, .output { font: .9rem/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .preview-command { color: var(--lime); margin: .9rem 0 .65rem; }
+  .output { color: #f5edff; margin: 0; max-height: 21rem; overflow: auto; }
+  .note-visual { color: var(--ink); background: #f2ebff; border-left: .32rem solid #af89ff; border-radius: .55rem; margin-top: 1rem; padding: .7rem .85rem; overflow-wrap: anywhere; }
+  .note-visual strong { display: block; }
+  .note-visual span { display: block; font-size: .88rem; color: var(--muted); white-space: pre-wrap; }
+  .note-visual.pop { animation: appear .24s ease-out; }
+  @keyframes appear { from { opacity: .4; transform: translateY(6px); } }
+  .usage { border-bottom: 1px solid var(--line); padding: .75rem .15rem; line-height: 1.55; }
+  summary { cursor: pointer; font-weight: 750; }
+  .usage p { margin-top: .45rem; color: var(--muted); }
+  .usage code { font-size: .85em; overflow-wrap: anywhere; }
+  .source-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 1rem; margin-top: 1.25rem; }
+  .tree, .inspector { border: 1px solid var(--line); border-radius: 1rem; padding: clamp(1rem, 3vw, 1.6rem); }
+  .tree { background: #fff; }
+  .folder { font: 800 .94rem var(--mono); display: flex; gap: .5rem; align-items: center; }
+  .folder-icon { color: var(--purple); }
+  .package { margin-top: .65rem; margin-left: .4rem; padding-left: .9rem; border-left: 1px solid var(--line); }
+  .files { list-style: none; margin: .45rem 0 0; padding: 0 0 0 .4rem; display: grid; gap: .35rem; }
+  .file-button { font: 750 .86rem var(--mono); width: 100%; text-align: left; display: flex; align-items: center; gap: .55rem; padding: .5rem; border: 1px solid transparent; border-radius: .5rem; background: transparent; color: var(--ink); overflow-wrap: anywhere; }
+  .file-button[aria-pressed="true"] { background: var(--violet); border-color: #d2bdf7; }
+  .file-icon { color: var(--purple); font-size: 1.1rem; }
+  .inspector { background: #f8e5d8; border-color: #eccebd; }
+  .inspector h3 { font: 850 clamp(1.25rem, 3vw, 1.9rem) var(--mono); overflow-wrap: anywhere; }
+  .inspector p { margin-top: .7rem; line-height: 1.55; }
+  .inspector .connection { padding-top: .75rem; border-top: 1px solid #e2c3b1; font-size: .92rem; }
+  @media (max-width: 730px) {
+    .hero-grid { gap: 1rem; grid-template-columns: 1fr .65fr; min-height: 260px; }
+    .hero-art { min-height: 200px; }
+    .hero-file { width: min(83%, 170px); padding: .7rem; }
+    .hero-file strong { font-size: .72rem; }
+    .orbit { height: 105px; }
+    .playground { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 490px) {
+    .wrap { width: calc(100% - 2rem); }
+    nav { gap: .65rem; font-size: .8rem; }
+    .hero-grid { grid-template-columns: 1fr; padding-block: 2rem 1.35rem; }
+    .hero-art { min-height: 155px; width: 230px; justify-self: center; }
+    .commands { grid-template-columns: 1fr 1fr; }
+    .source-layout { grid-template-columns: 1fr; }
+    section { margin-block: 2.5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { .note-visual.pop { animation: none; } }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand"><span class="brand-icon" aria-hidden="true">›_</span> secondbrain</div>
+      <nav aria-label="Tour"><a href="#play">Playground</a><a href="#source">Source tree</a></nav>
+    </div>
+    <div class="hero-grid">
+      <div>
+        <h1>Jot it down.<br><span>Find it later.</span></h1>
+        <p class="intro">Secondbrain saves your ideas as Markdown files right from your terminal.</p>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit"></div>
+        <span class="sparkle">✦</span><span class="sparkle small">✧</span>
+        <div class="hero-file"><span class="ext">.md</span><strong># Weekend ideas</strong><i></i><i></i></div>
+      </div>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  <section id="play" aria-labelledby="play-heading">
+    <h2 id="play-heading">Try the commands</h2>
+    <p class="section-lede">Start with <code>new</code>, then try <code>list</code> and <code>show</code>. This playground keeps sample notes in this page until you reload.</p>
+    <div class="commands" role="group" aria-label="Choose a command">
+      <button class="command" type="button" data-command="new" aria-pressed="true"><span class="command-icon" aria-hidden="true">+</span><code>new</code></button>
+      <button class="command" type="button" data-command="list" aria-pressed="false"><span class="command-icon" aria-hidden="true">≡</span><code>list</code></button>
+      <button class="command" type="button" data-command="show" aria-pressed="false"><span class="command-icon" aria-hidden="true">↳</span><code>show</code></button>
+      <button class="command" type="button" data-command="help" aria-pressed="false"><span class="command-icon" aria-hidden="true">?</span><code>--help</code></button>
+    </div>
+    <div class="playground">
+      <form class="controls" id="command-form">
+        <h3 id="task">Create a note</h3>
+        <p class="description" id="description">Give your note a title and add details if you like.</p>
+        <code class="signature" id="signature">new [OPTIONS] TITLE</code>
+        <div id="new-fields">
+          <label for="title">Title</label>
+          <input id="title" value="Weekend ideas" required>
+          <label for="body">Body <span class="optional">(optional)</span></label>
+          <textarea id="body" rows="2">Try the new bakery.</textarea>
+        </div>
+        <div id="show-fields" hidden>
+          <label for="number">Note number</label>
+          <input id="number" type="number" step="1" value="1" required disabled>
+        </div>
+        <div class="actions">
+          <button class="primary" type="submit" id="run">Save note</button>
+          <button class="quiet" type="button" id="command-help">Help for new</button>
+        </div>
+      </form>
+      <div class="terminal">
+        <div class="terminal-top"><span class="play-icon" aria-hidden="true">›_</span> Demo terminal</div>
+        <p class="preview-command" id="prompt"></p>
+        <div role="status" aria-live="polite" aria-atomic="true">
+          <pre class="output" id="output">Run the command to see its output.</pre>
+          <div class="note-visual" id="note-visual" aria-hidden="true" hidden><strong id="note-title"></strong><span id="note-detail"></span></div>
+        </div>
+      </div>
+    </div>
+    <details class="usage">
+      <summary>Using these commands in your terminal</summary>
+      <p>In the project folder, run <code>uv sync</code> once, then prefix commands with <code>uv run</code>, for example <code>uv run secondbrain list</code>. You can also use <code>uv run python -m secondbrain list</code>.</p>
+      <p><code>new</code> takes a title and accepts <code>--body TEXT</code> or <code>-b TEXT</code>. Use <code>--body -</code> to read from standard input, as in <code>cat draft.md | uv run secondbrain new "Draft" --body -</code>.</p>
+      <p>Notes go to <code>~/secondbrain/</code> by default. Set <code>SECONDBRAIN_DIR</code> to use another folder. Run <code>uv run secondbrain --help</code> or <code>uv run secondbrain new --help</code> for usage.</p>
+    </details>
+  </section>
+  <section id="source" aria-labelledby="source-heading">
+    <h2 id="source-heading">Peek inside the code</h2>
+    <p class="section-lede">Pick a file to see what it does and how it connects to the rest of the app.</p>
+    <div class="source-layout">
+      <div class="tree">
+        <div class="folder"><span class="folder-icon" aria-hidden="true">▰</span> src/</div>
+        <div class="package">
+          <div class="folder"><span class="folder-icon" aria-hidden="true">▰</span> secondbrain/</div>
+          <ul class="files" id="files">
+            <li><button class="file-button" type="button" data-file="__init__.py" aria-pressed="false"><span class="file-icon" aria-hidden="true">▧</span>__init__.py</button></li>
+            <li><button class="file-button" type="button" data-file="__main__.py" aria-pressed="false"><span class="file-icon" aria-hidden="true">▧</span>__main__.py</button></li>
+            <li><button class="file-button" type="button" data-file="app.py" aria-pressed="false"><span class="file-icon" aria-hidden="true">▧</span>app.py</button></li>
+            <li><button class="file-button" type="button" data-file="cli.py" aria-pressed="true"><span class="file-icon" aria-hidden="true">▧</span>cli.py</button></li>
+            <li><button class="file-button" type="button" data-file="notes.py" aria-pressed="false"><span class="file-icon" aria-hidden="true">▧</span>notes.py</button></li>
+          </ul>
+        </div>
+      </div>
+      <div class="inspector" aria-live="polite" aria-atomic="true">
+        <h3 id="file-name">cli.py</h3>
+        <p id="file-summary">Defines the terminal commands, handles their arguments, and prints the results.</p>
+        <p class="connection" id="file-connection">Uses Click to parse commands. Calls app.py for logging and notes.py to find, save, and read notes.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<noscript><p class="wrap">Enable JavaScript to run the playground and explore the source tree.</p></noscript>
+<script>
+'use strict';
+
+const byId = (id) => document.getElementById(id);
+const title = byId('title');
+const body = byId('body');
+const number = byId('number');
+const visual = byId('note-visual');
+const terminalOutput = byId('output');
+const commandButtons = [...document.querySelectorAll('[data-command]')];
+const fileButtons = [...document.querySelectorAll('[data-file]')];
+
+const commands = {
+  new: {
+    heading: 'Create a note',
+    description: 'Give your note a title and add details if you like.',
+    signature: 'new [OPTIONS] TITLE',
+    action: 'Save note'
+  },
+  list: {
+    heading: 'See your notes',
+    description: 'List notes from newest to oldest. Each number is its position in the current list.',
+    signature: 'list [OPTIONS]',
+    action: 'List notes'
+  },
+  show: {
+    heading: 'Read a note',
+    description: 'Enter a number from the latest list. Number 1 is the newest note.',
+    signature: 'show [OPTIONS] NUMBER',
+    action: 'Show note'
+  },
+  help: {
+    heading: 'See what’s available',
+    description: 'Use --help before choosing a command, or add it after new, list, or show for specific options.',
+    signature: '[OPTIONS] COMMAND [ARGS]...',
+    action: 'Show help'
+  }
+};
+
+const helpText = {
+  "new": "Usage: secondbrain new [OPTIONS] TITLE\n\n  Create a new note with the given TITLE.\n\n  Writes YYYY-MM-DD-<slug>.md to the notes directory and prints\n  its path on stdout. An existing file is never overwritten; -1,\n  -2, ... is appended.\n\n  If TITLE contains newlines, the first line becomes the heading\n  and the rest is added to the note body. Use --body for multi-\n  line text, or `--body -` to read the body from stdin.\n\n  Examples:\n    secondbrain new \"Caching idea\"\n    secondbrain new \"Caching idea\" --body $'Use an LRU.\\n\\nCheck limits.'\n    cat draft.md | secondbrain new \"Draft\" --body -\n\nOptions:\n  -b, --body TEXT  Note body (multi-line). Use '-' to read it from\n                   stdin.\n  --help           Show this message and exit.",
+  "list": "Usage: secondbrain list [OPTIONS]\n\n  List all notes in the notes directory.\n\n  Prints the notes directory, then one numbered line per note,\n  newest first. Use these numbers with `secondbrain show`.\n\nOptions:\n  --help  Show this message and exit.",
+  "show": "Usage: secondbrain show [OPTIONS] NUMBER\n\n  Display the contents of note NUMBER.\n\n  NUMBER is the position shown by `secondbrain list` (1 is the\n  newest). Prints the note's markdown on stdout. If the notes\n  directory is missing, empty or NUMBER is out of range, an error\n  goes to stderr and the exit status is 1.\n\n  Example:\n    secondbrain show 1\n\nOptions:\n  --help  Show this message and exit.",
+  "help": "Usage: secondbrain [OPTIONS] COMMAND [ARGS]...\n\n  secondbrain -- capture and organise your thoughts.\n\n  Notes are plain markdown files, stored in the directory named by\n  the SECONDBRAIN_DIR environment variable (default:\n  ~/secondbrain/). Commands print their result on stdout; log\n  lines go to stderr.\n\n  Typical workflow:\n    secondbrain new \"Caching idea\"     # save a note, prints its path\n    secondbrain list                   # numbered list, newest first\n    secondbrain show 1                 # print note 1\n\n  Run `secondbrain COMMAND --help` for details and examples.\n\nOptions:\n  --help  Show this message and exit.\n\nCommands:\n  list  List all notes in the notes directory.\n  new   Create a new note with the given TITLE.\n  show  Display the contents of note NUMBER."
+};
+
+const source = {
+  '__init__.py': ['Marks secondbrain as a Python package. The file is empty.', 'Python loads it when importing the package.'],
+  '__main__.py': ['Starts the command-line interface when you run python -m secondbrain.', 'Imports and calls cli() from cli.py.'],
+  'app.py': ['Configures console and file logging. It also has a small greeting function for checking the setup.', 'Uses Loguru. cli.py calls configure_logging() before a subcommand runs.'],
+  'cli.py': ['Defines the terminal commands, handles their arguments, and prints the results.', 'Uses Click to parse commands. Calls app.py for logging and notes.py to find, save, and read notes.'],
+  'notes.py': ['Chooses the notes folder, creates dated Markdown files, sorts them newest first, and reads their contents.', 'cli.py calls its note functions. Its filename logic adds a numeric suffix when a name is already in use.']
+};
+
+const pad = (value) => String(value).padStart(2, '0');
+function dateStamp(date) {
+  return [date.getFullYear(), pad(date.getMonth() + 1), pad(date.getDate())].join('-');
+}
+function timeStamp(date) {
+  return [pad(date.getHours()), pad(date.getMinutes()), pad(date.getSeconds())].join(':');
+}
+function slugify(text) {
+  return text.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase()
+    .replace(/[^\p{L}\p{N}_\s-]/gu, '').replace(/[\s-]+/g, '-')
+    .replace(/^[-_]+|[-_]+$/g, '') || 'untitled';
+}
+function sampleNote(daysAgo, heading, text) {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  date.setHours(10, 0, 0, 0);
+  return { heading, text, filename: dateStamp(date) + '-' + slugify(heading) + '.md', timestamp: dateStamp(date) + 'T' + timeStamp(date) };
+}
+const notes = [
+  sampleNote(1, 'Reading list', 'Find something fun for the train ride.'),
+  sampleNote(2, 'Garden plans', 'Plant basil by the kitchen window.')
+];
+
+const folder = '~/secondbrain/';
+const quote = (text) => "'" + text.replace(/'/g, "'\"'\"'") + "'";
+let selected = 'new';
+
+function commandLine() {
+  const prefix = 'uv run secondbrain ';
+  if (selected === 'new') {
+    const separator = title.value.startsWith('-') ? ' -- ' : ' ';
+    const stdin = body.value === '-';
+    const pipe = stdin ? "printf '%s' '-' | " : '';
+    const bodyFlag = body.value ? ' --body ' + (stdin ? '-' : quote(body.value)) : '';
+    return pipe + prefix + 'new' + bodyFlag + separator + quote(title.value);
+  }
+  if (selected === 'show') return prefix + 'show ' + (number.value.startsWith('-') ? '-- ' : '') + (number.value || 'NUMBER');
+  if (selected === 'help') return prefix + '--help';
+  return prefix + selected;
+}
+function showPrompt(command) {
+  byId('prompt').textContent = '$ ' + command;
+}
+function showNoteVisual(heading, detail) {
+  byId('note-title').textContent = heading;
+  byId('note-detail').textContent = detail;
+  visual.hidden = false;
+  visual.classList.remove('pop');
+  requestAnimationFrame(() => visual.classList.add('pop'));
+}
+function chooseCommand(command) {
+  selected = command;
+  const entry = commands[command];
+  for (const button of commandButtons) {
+    button.setAttribute('aria-pressed', button.dataset.command === command);
+  }
+  byId('task').textContent = entry.heading;
+  byId('description').textContent = entry.description;
+  byId('signature').textContent = entry.signature;
+  byId('run').textContent = entry.action;
+  byId('command-help').textContent = 'Help for ' + command;
+  byId('command-help').hidden = command === 'help';
+  byId('new-fields').hidden = title.disabled = body.disabled = command !== 'new';
+  byId('show-fields').hidden = number.disabled = command !== 'show';
+  showPrompt(commandLine());
+  terminalOutput.textContent = 'Run the command to see its output.';
+  visual.hidden = true;
+}
+function printHelp(command) {
+  showPrompt('uv run secondbrain ' + (command === 'help' ? '--help' : command + ' --help'));
+  terminalOutput.textContent = helpText[command];
+  visual.hidden = true;
+}
+function createNote() {
+  const date = new Date();
+  const heading = title.value.trim();
+  const text = body.value.trimEnd().replace(/^\n+/, '');
+  const stem = dateStamp(date) + '-' + slugify(heading);
+  let filename = stem + '.md';
+  for (let suffix = 1; notes.some((note) => note.filename === filename); suffix += 1) {
+    filename = stem + '-' + suffix + '.md';
+  }
+  notes.unshift({ heading, text, filename, timestamp: dateStamp(date) + 'T' + timeStamp(date) });
+  terminalOutput.textContent = folder + filename;
+  showNoteVisual('▧  Markdown file saved', filename);
+}
+function listNotes() {
+  const listing = notes.map((note, index) => (index + 1) + '. ' + note.filename);
+  terminalOutput.textContent = 'Notes: ' + folder + '\n' + listing.join('\n');
+  showNoteVisual(notes.length + ' notes in the folder', 'Use a number from the list with show.');
+}
+function showNote() {
+  const position = Number(number.value);
+  const note = notes[position - 1];
+  if (!note || position < 1 || !Number.isInteger(position)) {
+    terminalOutput.textContent = 'Error: Note ' + position + ' not found. Only ' + notes.length + ' notes available.';
+    return;
+  }
+  terminalOutput.textContent = ['# ' + note.heading, note.text, note.timestamp].filter(Boolean).join('\n\n');
+  showNoteVisual('▧  ' + note.heading, note.filename);
+}
+
+for (const button of commandButtons) {
+  button.addEventListener('click', () => chooseCommand(button.dataset.command));
+}
+byId('command-form').addEventListener('input', () => showPrompt(commandLine()));
+byId('command-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  showPrompt(commandLine());
+  visual.hidden = true;
+  if (selected === 'new') createNote();
+  if (selected === 'list') listNotes();
+  if (selected === 'show') showNote();
+  if (selected === 'help') printHelp('help');
+});
+byId('command-help').addEventListener('click', () => printHelp(selected));
+
+for (const button of fileButtons) {
+  button.addEventListener('click', () => {
+    for (const file of fileButtons) file.setAttribute('aria-pressed', String(file === button));
+    const file = button.dataset.file;
+    byId('file-name').textContent = file;
+    byId('file-summary').textContent = source[file][0];
+    byId('file-connection').textContent = source[file][1];
+  });
+}
+
+chooseCommand('new');
+</script>
+</body>
+</html>
