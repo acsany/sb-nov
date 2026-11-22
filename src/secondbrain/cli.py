@@ -9,8 +9,9 @@ from secondbrain.app import configure_logging
 from secondbrain.notes import create_note, list_note_files, notes_dir, read_note
 
 
-@click.group()
-def cli():
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx: click.Context):
     """secondbrain -- capture and organise your thoughts.
 
     Notes are plain markdown files, stored in the directory named by the
@@ -26,6 +27,10 @@ def cli():
     Run `secondbrain COMMAND --help` for details and examples.
     """
     configure_logging()
+    if ctx.invoked_subcommand is None:
+        from secondbrain.tui import NotesApp
+
+        NotesApp(notes_dir()).run()
 
 
 @cli.command()
