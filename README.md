@@ -10,6 +10,12 @@ uv sync
 
 ## Usage
 
+Run `uv run secondbrain` to open the terminal editor. Click a note or use the
+arrow keys to preview its Markdown. The header shows its CLI number and timestamp.
+Press Enter in the note list to edit. Choose **Save** to write your changes or
+**Cancel** to discard them. Choose **Create** to start a draft and use its first
+line as the title. Tab moves between controls and Ctrl+Q exits.
+
 ```bash
 uv run secondbrain new "My brilliant idea"          # save a note as markdown
 uv run secondbrain new "Title" --body "More text"   # note with a body (or --body - for stdin)
