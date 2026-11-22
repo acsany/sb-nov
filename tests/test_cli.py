@@ -3,6 +3,7 @@
 import re
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 
 from secondbrain.cli import cli
@@ -12,6 +13,60 @@ from secondbrain.cli import cli
 # ---------------------------------------------------------------------------
 
 runner = CliRunner()
+
+
+# ---------------------------------------------------------------------------
+# logging
+# ---------------------------------------------------------------------------
+
+
+def test_cli_default_log_file_is_shared_across_working_directories(
+    tmp_path, tmp_note_dir, monkeypatch
+):
+    monkeypatch.delenv("LOG_FILE")
+    fake_home = tmp_path / "home"
+    fake_home.mkdir()
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: fake_home))
+    log_file = fake_home / ".secondbrain" / "logs" / "app.log"
+    first_dir = tmp_path / "first"
+    second_dir = tmp_path / "second"
+    first_dir.mkdir()
+    second_dir.mkdir()
+
+    assert not log_file.parent.exists()
+    monkeypatch.chdir(first_dir)
+    result = runner.invoke(cli, ["new", "First entry"])
+    assert result.exit_code == 0, result.output
+    assert log_file.parent.is_dir()
+    assert "first-entry.md" in log_file.read_text(encoding="utf-8")
+
+    monkeypatch.chdir(second_dir)
+    result = runner.invoke(cli, ["new", "Second entry"])
+    assert result.exit_code == 0, result.output
+    log_contents = log_file.read_text(encoding="utf-8")
+    assert "first-entry.md" in log_contents
+    assert "second-entry.md" in log_contents
+    assert not (first_dir / "app.log").exists()
+    assert not (second_dir / "app.log").exists()
+
+
+@pytest.mark.parametrize("absolute", [True, False], ids=["absolute", "relative"])
+def test_cli_log_file_override(tmp_path, tmp_note_dir, monkeypatch, absolute):
+    fake_home = tmp_path / "home"
+    fake_home.mkdir()
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: fake_home))
+    work_dir = tmp_path / "work"
+    work_dir.mkdir()
+    monkeypatch.chdir(work_dir)
+    log_file = tmp_path / "custom.log" if absolute else work_dir / "custom.log"
+    monkeypatch.setenv("LOG_FILE", str(log_file) if absolute else log_file.name)
+
+    result = runner.invoke(cli, ["new", "Custom log entry"])
+
+    assert result.exit_code == 0, result.output
+    assert "custom-log-entry.md" in log_file.read_text(encoding="utf-8")
+    assert not (fake_home / ".secondbrain").exists()
+    assert not (work_dir / "app.log").exists()
 
 
 # ---------------------------------------------------------------------------

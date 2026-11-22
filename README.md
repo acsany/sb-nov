@@ -40,10 +40,11 @@ cp .env.example .env
 | Variable | Default | Description |
 | --- | --- | --- |
 | `LOG_LEVEL` | `INFO` | Console log level. Set it to `DEBUG` in `.env` for verbose console output. |
-| `LOG_FILE` | `app.log` | Path to the log file. |
+| `LOG_FILE` | `~/.secondbrain/logs/app.log` | Path to the log file. Relative paths are resolved from the current working directory. |
 | `SECONDBRAIN_DIR` | `~/secondbrain/` | Directory where notes are stored. |
 
 Load `.env` explicitly with `uv run --env-file .env secondbrain`. The application reads its settings from the process environment.
+When `LOG_FILE` is unset, secondbrain creates the default log directory if needed. The `.env.example` template sets `LOG_FILE=app.log` as a development override.
 
 ## Testing
 
