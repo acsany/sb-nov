@@ -52,7 +52,9 @@ def build_note_path(title: str, base_dir: Path, note_date: date) -> Path:
     stem = f"{note_date.isoformat()}-{slug}"
     candidate = base_dir / f"{stem}.md"
     counter = 1
-    while candidate.exists():
+    # `exists()` follows symlinks, so a dangling one would look free while
+    # exclusive creation still refuses it; `is_symlink()` closes that gap.
+    while candidate.exists() or candidate.is_symlink():
         candidate = base_dir / f"{stem}-{counter}.md"
         counter += 1
     return candidate

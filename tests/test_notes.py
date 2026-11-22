@@ -249,6 +249,13 @@ def test_create_note_never_overwrites_when_path_was_taken(tmp_path, monkeypatch)
     assert created.name == "2026-03-22-idea-1.md"
 
 
+def test_create_note_skips_dangling_symlink(tmp_path):
+    (tmp_path / "2026-03-22-idea.md").symlink_to(tmp_path / "missing-target")
+    created = create_note("idea", tmp_path, now=datetime(2026, 3, 22, 9, 0, 0))
+    assert created.name == "2026-03-22-idea-1.md"
+    assert not (tmp_path / "missing-target").exists()
+
+
 # ---------------------------------------------------------------------------
 # multi-line titles and bodies
 # ---------------------------------------------------------------------------
