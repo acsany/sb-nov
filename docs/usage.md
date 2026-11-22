@@ -81,7 +81,9 @@ By default, the log file includes milliseconds, the UTC offset, full level names
 | Variable    | Default    | Description                         |
 |-------------|------------|-------------------------------------|
 | `LOG_LEVEL` | `INFO`     | Console log level (DEBUG, INFO, …) |
-| `LOG_FILE`  | `app.log`  | Path to the log file                |
+| `LOG_FILE` | `~/.secondbrain/logs/app.log` | Path to the log file. Relative paths are resolved from the current working directory. |
 | `SECONDBRAIN_DIR` | `~/secondbrain/` | Directory where notes are stored |
 
-Copy `.env.example` to `.env` for development defaults, then run with `uv run --env-file .env`.
+When `LOG_FILE` is unset, secondbrain creates the default log directory if needed.
+The `.env.example` template sets `LOG_FILE=app.log` as a development override.
+Copy it to `.env` and load it with `uv run --env-file .env secondbrain`.
