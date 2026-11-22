@@ -11,10 +11,15 @@ uv sync
 ## Usage
 
 ```bash
-uv run secondbrain                  # CLI entry point
-uv run --env-file .env secondbrain   # Development settings
-uv run python -m secondbrain        # Python module
+uv run secondbrain new "My brilliant idea"          # save a note as markdown
+uv run secondbrain new "Title" --body "More text"   # note with a body (or --body - for stdin)
+uv run secondbrain list                             # list notes (newest first)
+uv run secondbrain show 1                           # print the contents of note 1
+uv run --env-file .env secondbrain list             # Development settings
+uv run python -m secondbrain list                   # Python module
 ```
+
+Notes are plain markdown files named `YYYY-MM-DD-<slug>.md`: the title as a heading, the optional body, then a timestamp. Existing files are never overwritten (`-1`, `-2`, … is appended). Results go to stdout and log lines to stderr. Run `uv run secondbrain --help` for details.
 
 Console logs use local time to the second and three-letter level labels.
 
@@ -36,6 +41,7 @@ cp .env.example .env
 | --- | --- | --- |
 | `LOG_LEVEL` | `INFO` | Console log level. Set it to `DEBUG` in `.env` for verbose console output. |
 | `LOG_FILE` | `app.log` | Path to the log file. |
+| `SECONDBRAIN_DIR` | `~/secondbrain/` | Directory where notes are stored. |
 
 Load `.env` explicitly with `uv run --env-file .env secondbrain`. The application reads its settings from the process environment.
 
