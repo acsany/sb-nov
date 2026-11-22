@@ -9,6 +9,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 DEFAULT_DIR_NAME = "secondbrain"
+_DATE_PREFIX = re.compile(r"^\d{4}-\d{2}-\d{2}")
 
 
 def notes_dir() -> Path:
@@ -99,21 +100,37 @@ def create_note(
     """
     now = now or datetime.now()
     heading, text = split_title_body(title, body)
-    path = build_note_path(heading, base_dir, now.date())
     timestamp = now.replace(microsecond=0).isoformat()
     sections = [f"# {heading}", text, timestamp]
     content = "\n\n".join(s for s in sections if s) + "\n"
-    path.write_text(content, encoding="utf-8")
-    return path.resolve()
+    while True:
+        path = build_note_path(heading, base_dir, now.date())
+        try:
+            # Exclusive mode reserves the name atomically, so a concurrent
+            # `new` that picked the same path can never be overwritten.
+            with path.open("x", encoding="utf-8") as handle:
+                handle.write(content)
+        except FileExistsError:
+            continue  # lost the race; build_note_path now picks the next suffix
+        return path.resolve()
 
 
 def list_note_files(base_dir: Path) -> list[Path]:
     """Return the markdown notes in `base_dir`, newest first.
 
     `list` and `show` both number notes from this ordering, so the number
-    printed by `list` is the one `show` accepts.
+    printed by `list` is the one `show` accepts. Notes are ordered by the date
+    in the filename, then by modification time (filenames carry no time of day,
+    so the slug must not decide which same-day note is newer), then by name.
+    Only regular files count; a directory named `*.md` is ignored.
     """
-    return sorted(base_dir.glob("*.md"), reverse=True)
+
+    def sort_key(path: Path) -> tuple[str, int, str]:
+        match = _DATE_PREFIX.match(path.name)
+        return (match.group() if match else "", path.stat().st_mtime_ns, path.name)
+
+    notes = [p for p in base_dir.glob("*.md") if p.is_file()]
+    return sorted(notes, key=sort_key, reverse=True)
 
 
 def read_note(path: Path) -> str:

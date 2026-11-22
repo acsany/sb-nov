@@ -1,10 +1,12 @@
 """Tests for the notes module (slugify, build_note_path, create_note)."""
 
+import os
 from datetime import date, datetime
 from pathlib import Path
 
 import pytest
 
+from secondbrain import notes as notes_module
 from secondbrain.notes import (
     build_note_path,
     create_note,
@@ -209,6 +211,42 @@ def test_list_note_files_newest_first_and_md_only(tmp_path):
         "2026-02-01-b.md",
         "2026-01-01-a.md",
     ]
+
+
+def test_list_note_files_orders_same_day_notes_by_creation(tmp_path):
+    zulu = create_note("Zulu", tmp_path, now=datetime(2026, 3, 22, 9, 0, 0))
+    alpha = create_note("Alpha", tmp_path, now=datetime(2026, 3, 22, 9, 5, 0))
+    os.utime(zulu, ns=(1_000_000_000, 1_000_000_000))
+    os.utime(alpha, ns=(2_000_000_000, 2_000_000_000))
+    assert [p.name for p in list_note_files(tmp_path)] == [
+        alpha.name,
+        zulu.name,
+    ]
+
+
+def test_list_note_files_ignores_directories(tmp_path):
+    (tmp_path / "2026-01-01-a.md").write_text("a")
+    (tmp_path / "archive.md").mkdir()
+    assert [p.name for p in list_note_files(tmp_path)] == ["2026-01-01-a.md"]
+
+
+def test_create_note_never_overwrites_when_path_was_taken(tmp_path, monkeypatch):
+    """Simulate a concurrent `new` that grabbed the chosen path first."""
+    real = notes_module.build_note_path
+    taken = tmp_path / "2026-03-22-idea.md"
+    calls = []
+
+    def racing(title, base_dir, note_date):
+        path = real(title, base_dir, note_date)
+        if not calls:  # first lookup says free; then the other process wins
+            taken.write_text("other process\n")
+        calls.append(path)
+        return path
+
+    monkeypatch.setattr(notes_module, "build_note_path", racing)
+    created = create_note("idea", tmp_path, now=datetime(2026, 3, 22, 9, 0, 0))
+    assert taken.read_text() == "other process\n"
+    assert created.name == "2026-03-22-idea-1.md"
 
 
 # ---------------------------------------------------------------------------
